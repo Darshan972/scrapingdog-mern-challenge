@@ -46,8 +46,7 @@ This challenge includes **3 short tasks** to evaluate your backend, scraping, an
 ## ✅ Submission Rules
 - Complete all 3 tasks within **24 hours**.
 - Push to a **private GitHub repo** and invite:
-  - `manthan@scrapingdog.com`
-  - `divanshu@scrapingdog.com`
+  - `github.com/Darshan972`
 - Include:
   - `README.md` with setup + curl examples
   - `.env.example` file
