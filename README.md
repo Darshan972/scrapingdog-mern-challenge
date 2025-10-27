@@ -65,8 +65,7 @@ Tasks 1 & 2 are warm‑ups. **Task 3 is intentionally a bit harder** to observe 
 ## ✅ Submission Rules
 - Complete all 3 tasks within **24 hours**.
 - Push to a **private GitHub repo** and invite:
-  - `manthan@scrapingdog.com`
-  - `divanshu@scrapingdog.com`
+  - `github.com/Darshan972`
 - Include:
   - `README.md` with setup + curl examples
   - `.env.example` file
