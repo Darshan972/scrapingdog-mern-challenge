@@ -18,20 +18,15 @@ const userSchema = new mongoose.Schema({
   credits: { type: Number, default: 10 }
 }, { timestamps: true });
 
-const jobSchema = new mongoose.Schema({
+const scrapeSchema = new mongoose.Schema({
   url: String,
-  js: Boolean,
-  status: { type: String, enum: ['queued','running','done','failed','cancelled'], default: 'queued' },
-  attempts: { type: Number, default: 0 },
-  result: mongoose.Schema.Types.Mixed,
-  error: mongoose.Schema.Types.Mixed,
-  startedAt: Date,
-  finishedAt: Date,
-  idempotencyKey: String,
+  title: String,
+  scrapedAt: Date,
+  apiKey: String
 }, { timestamps: true });
 
 const User = mongoose.model('User', userSchema);
-const JobDoc = mongoose.model('Job', jobSchema);
+const Scrape = mongoose.model('Scrape', scrapeSchema);
 
 // --- helpers ---
 const withApiKey = async (req, res, next) => {
@@ -57,25 +52,14 @@ app.get('/api/quotes', async (req, res) => {
 });
 
 // --- Task 3 placeholders ---
-// These endpoints align with the harder specs in the README
-app.post('/jobs', withApiKey, async (req, res) => {
-  // TODO: enqueue with BullMQ; enforce idempotency + URL dedupe (60s)
-  res.json({ ok: true, note: 'Implement enqueue here' });
+app.post('/api/batch-scrape', withApiKey, async (req, res) => {
+  // TODO: fetch titles from multiple URLs in parallel, save to DB, deduct credits
+  res.json({ ok: true, note: 'Implement batch scrape here' });
 });
 
-app.get('/jobs/:id', async (req, res) => {
-  // TODO: fetch job status/result
-  res.json({ ok: true, note: 'Return job status' });
-});
-
-app.delete('/jobs/:id', async (req, res) => {
-  // TODO: cancel if queued/running (best-effort)
-  res.json({ cancelled: false, note: 'Implement cancel' });
-});
-
-app.get('/healthz', async (req, res) => {
-  // TODO: report redis connectivity, queue depth, running count
-  res.json({ redis: 'unknown', queueDepth: null, running: null });
+app.get('/api/stats', async (req, res) => {
+  // TODO: aggregate scrape stats from MongoDB
+  res.json({ ok: true, note: 'Return aggregated stats' });
 });
 
 // --- boot ---

@@ -2,8 +2,8 @@
 
 Thank you for applying to the MERN Stack Developer role at **Scrapingdog**.
 
-This challenge includes **3 short tasks** to evaluate your backend, scraping, and system design skills.  
-Tasks 1 & 2 are warm‑ups. **Task 3 is intentionally a bit harder** to observe your production thinking.
+This challenge includes **3 short tasks** to evaluate your backend, scraping, and data processing skills.  
+All 3 tasks are warm‑ups designed to test your fundamentals.
 
 ---
 
@@ -32,40 +32,28 @@ Tasks 1 & 2 are warm‑ups. **Task 3 is intentionally a bit harder** to observe 
 
 ---
 
-## 🧩 Task 3 — Mini Queue v2 (Harder)
-**Goal:** Show reliability thinking (retries, dedupe, concurrency caps, credit safety).
+## 🧩 Task 3 — Batch Scrape with Aggregation (Warm‑up)
+**Goal:** Test array handling, parallel requests, and MongoDB aggregation.
 
-**What to build:**
-- **Queue:** Use **BullMQ** (preferred) with Redis (in‑memory fallback acceptable).
-- **Endpoints**
-  1. `POST /jobs` → body: `{ url, js: boolean }` (reuse Task 2’s scraper).
-     - **Idempotency key** header `Idempotency-Key` (string). If the same key + same `url` arrives within **60s**, return the existing job instead of enqueuing a duplicate.
-  2. `GET /jobs/:id` → `{ status: queued|running|done|failed, attempts, result?, error?, startedAt?, finishedAt? }`
-  3. `DELETE /jobs/:id` → cancel if still queued or running (best‑effort). Return `{ cancelled: true|false }`.
-- **Reliability**
-  - **Exponential backoff** retries: `3` attempts at ~`1s`, `3s`, `7s`.
-  - **Global concurrency cap**: at most **3** Playwright browsers at once using a **Redis semaphore** (or equivalent). Extra jobs wait in the queue.
-  - **Per‑job timeout**: **20s** hard limit. Ensure `try/finally` closes browser/context even on timeouts/cancels.
-  - **Dedupe by URL**: if the same `url` is enqueued again within **60s**, respond with the existing `jobId` (even without an idempotency key).
-- **Credits**
-  - Each job deducts **1 credit on success only** (`status=done` and `result` non‑empty).
-  - No deduction on `failed`, `timeout`, or `cancelled`.
-- **Observability**
-  - `GET /healthz` → `{ redis: "ok|down", queueDepth, running }`.
-  - Log job lifecycle with a `requestId` and `apiKey` (fake the key if you prefer).
-
-**What we’ll look for:**
-- Clean separation: HTTP layer, queue/worker, scraper, credit service.
-- Correct idempotency + dedupe behavior.
-- Proper use of `finally` to close pages/contexts/browsers.
-- Concurrency cap truly enforced (no >3 browsers at once).
+**Requirements:**
+- Create a `POST /api/batch-scrape` endpoint.
+- Accept body: `{ "urls": ["https://books.toscrape.com", "https://quotes.toscrape.com"] }` (max 5 URLs).
+- Fetch the `<title>` from each URL in parallel using `Promise.all`.
+- Save each result to MongoDB collection `scrapes` with `{ url, title, scrapedAt, apiKey }`.
+- Deduct **1 credit per successful fetch** (status 200 only).
+- Return `{ results: [{url, title, success}], creditsUsed, creditsRemaining }`.
+- Create a `GET /api/stats` endpoint that returns aggregated stats:
+  - Total scrapes count
+  - Scrapes per domain (group by domain from URL)
+  - Most scraped URL
 
 ---
 
 ## ✅ Submission Rules
 - Complete all 3 tasks within **24 hours**.
 - Push to a **private GitHub repo** and invite:
-  - `github.com/Darshan972`
+  - `manthan@scrapingdog.com`
+  - `divanshu@scrapingdog.com`
 - Include:
   - `README.md` with setup + curl examples
   - `.env.example` file
@@ -78,7 +66,7 @@ Tasks 1 & 2 are warm‑ups. **Task 3 is intentionally a bit harder** to observe 
 |------|--------|-------------|
 | API & Mongo logic | 10 | Clean structure, correct responses |
 | Scraping logic | 10 | Accuracy, cleanup, selectors |
-| Queue + Credit system (Task 3) | 10 | Idempotency, dedupe, cap, retries |
+| Batch processing + Aggregation (Task 3) | 10 | Parallel execution, stats calculation, error handling |
 
 ---
 
@@ -88,6 +76,28 @@ cp .env.example .env
 npm i
 npm start
 ```
+
+### Example cURL Commands
+```bash
+# Task 1 - Scrape title
+curl -X POST http://localhost:3000/api/scrape \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: demo-key" \
+  -d '{"url":"https://books.toscrape.com"}'
+
+# Task 2 - Get quotes
+curl http://localhost:3000/api/quotes
+
+# Task 3 - Batch scrape
+curl -X POST http://localhost:3000/api/batch-scrape \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: demo-key" \
+  -d '{"urls":["https://books.toscrape.com","https://quotes.toscrape.com"]}'
+
+# Task 3 - Get stats
+curl http://localhost:3000/api/stats
+```
+
 This repo includes a **starter `server.js`** with Express, Mongo connect, and route placeholders.  
 You can restructure files as you like.
 
